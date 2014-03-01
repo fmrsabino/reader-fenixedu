@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="fredericosabino.fenixist"
+    android:versionCode="5"
+    android:versionName="1.1.2" >
+    
+    <uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.VIBRATE"/>
+
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="19" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.Holo.Light" >
+        <service android:name="fredericosabino.fenixist.FenixClientService" />
+        <activity
+            android:name="fredericosabino.fenixist.StartScreenActivity"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" >
+            
+        </activity>
+        <activity
+            android:name="fredericosabino.fenixist.MainActivity"
+            android:label="@string/app_name">
+        </activity>
+        <activity
+            android:name="fredericosabino.fenixist.OAuthActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="fredericosabino.fenixist.DisplayMessageActivity"
+            android:label="@string/title_activity_display_message"
+            android:parentActivityName="fredericosabino.fenixist.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.myfirstapp.MainActivity" />
+        </activity>
+        <receiver android:name="fredericosabino.fenixist.MainActivity$ConnectionWatcher">
+     		<intent-filter>
+          		<action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+    		 </intent-filter>
+		</receiver>
+    </application>
+
+</manifest>

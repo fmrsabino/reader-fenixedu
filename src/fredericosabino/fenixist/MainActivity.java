@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
 	private ArrayList<String> cHomePages;
 	
 	protected int feedIndex = 0;
-
+	//test
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

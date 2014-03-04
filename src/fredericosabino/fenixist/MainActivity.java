@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
 	private ArrayList<String> cHomePages;
 	
 	protected int feedIndex = 0;
-	//test
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -156,7 +156,7 @@ public class MainActivity extends Activity {
 
             /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
-            	getActionBar().setTitle("Fenix@IST");
+            	getActionBar().setTitle(R.string.fenix_ist);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 		};

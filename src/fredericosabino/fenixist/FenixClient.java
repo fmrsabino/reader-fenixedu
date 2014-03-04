@@ -1,19 +1,17 @@
 package fredericosabino.fenixist;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.ExecutionException;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 
 import com.google.gson.Gson;
@@ -31,6 +29,12 @@ public class FenixClient {
 		_activity = activity;
 		SharedPreferences settings = activity.getSharedPreferences("OAuthToken", Activity.MODE_PRIVATE);
 		accessToken = settings.getString("accessToken", null);
+	}
+	
+	@SuppressWarnings("resource")
+	static String convertStreamToString(java.io.InputStream is) {
+	    java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+	    return s.hasNext() ? s.next() : "";
 	}
 	
 	public UserCoursesInfo getUserCourses() throws NoConnectionException {
@@ -101,28 +105,35 @@ public class FenixClient {
 	}
 	
 	private String downloadFromFenix(String url) throws NoConnectionException {
-		AndroidHttpClient httpclient = AndroidHttpClient.newInstance("", _activity);
-	    HttpGet httpget = new HttpGet(url);
 	    String result = null;
-	    
+	    InputStream in = null;
+	    HttpURLConnection urlConnection = null;
 	    //Download
 		try {
-			//Check internet connection
+			//Check Internet connection
 			ConnectivityManager connMgr = (ConnectivityManager) _activity.getSystemService(Context.CONNECTIVITY_SERVICE);
 			NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 			if(networkInfo != null && networkInfo.isConnected()) {
-				HttpResponse response = httpclient.execute(httpget);
-				result = EntityUtils.toString(response.getEntity());
-				httpclient.close();
+				URL url2 = new URL(url);
+			    urlConnection = (HttpURLConnection) url2.openConnection();
+			    in = new BufferedInputStream(urlConnection.getInputStream());
+			    result = convertStreamToString(in);
 			} else {
 				throw new NoConnectionException();
 			}
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} finally {
+			try {
+				if(urlConnection != null) {
+					urlConnection.disconnect();
+				}
+				if(in != null) {
+					in.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		return result;
 	}

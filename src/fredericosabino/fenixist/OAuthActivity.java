@@ -3,13 +3,13 @@ package fredericosabino.fenixist;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -30,7 +30,6 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -120,14 +119,15 @@ public class OAuthActivity extends Activity {
 	/**
 	 * Receives an url and downloads the contents from the webserver specified by this url
 	 */
-	public String downloadContents(String url) throws IOException, MalformedURLException {		
-		AndroidHttpClient httpclient = AndroidHttpClient.newInstance("", this);
-		HttpGet httpget = new HttpGet(url);
-		HttpResponse response = httpclient.execute(httpget);
-		HttpEntity entity = response.getEntity();
-		InputStream stream = entity.getContent();
-		httpclient.close();
-		return convertStreamToString(stream);
+	public String downloadContents(String url) throws IOException, MalformedURLException {				
+		URL url2 = new URL(url);
+		HttpURLConnection conn = (HttpURLConnection) url2.openConnection();
+		InputStream in = conn.getInputStream();
+		String result = convertStreamToString(in);
+		in.close();
+		conn.disconnect();
+		
+		return result;
 	}
 	
 	static String convertStreamToString(java.io.InputStream is) {

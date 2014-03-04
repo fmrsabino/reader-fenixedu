@@ -1,5 +1,6 @@
 package fredericosabino.fenixist;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,13 +10,11 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.Activity;
@@ -25,7 +24,6 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -241,31 +239,25 @@ public class NewsFeedFragment extends Fragment {
 		/**
 		 * Receives an url and downloads the contents from the webserver specified by this url
 		 */
-		public InputStream getFeed(String url, int index, AndroidHttpClient httpclient) throws IOException, MalformedURLException {
-		    HttpHead httphead = new HttpHead(url);
-		    Log.i(TAG, "Method is: " + httphead.getMethod());
-		    HttpResponse response = httpclient.execute(httphead);
-		    long size = Long.valueOf(response.getFirstHeader("Content-Length").getValue());
+		public InputStream getFeed(URL url, int index, HttpURLConnection connection) throws IOException, MalformedURLException {
+		    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+		    urlConnection.setRequestMethod("HEAD");
+		    long size = urlConnection.getContentLength();
+		    
 		    Log.i(TAG, "Content length of " + cNames.get(index) + " is " + size);
-			
+		    
 			ArrayList<Long> sizes = loadFeedSizes();
 			if(sizes.get(index).equals(size)) { //we don't have anything new... cancel the task
-				httpclient.close();
+				urlConnection.disconnect();
 				cancel(true);
 				return null;
 			}
 			//from this point we know that we have news so we need to download the feed
 			sizes.set(index, size);
 			writeFeedSizes(sizes);
-			httpclient.close();
+			urlConnection.disconnect();
 			
-			httpclient = AndroidHttpClient.newInstance("", getActivity());
-			HttpGet httpget = new HttpGet(url);
-			response = httpclient.execute(httpget);
-			HttpEntity entity = response.getEntity();
-			InputStream is = entity.getContent();
-			
-			return is;
+			return new BufferedInputStream(connection.getInputStream());
 		}
 		
 		/**
@@ -274,12 +266,13 @@ public class NewsFeedFragment extends Fragment {
 		public ArrayList<RSSItem> fillFeed(String url, int index) {
 			InputStream stream = null;
 			ArrayList<RSSItem> feed = new ArrayList<RSSItem>();
-			
+			HttpURLConnection connection = null;
 			try {
 				//Download the feed from URL
-				AndroidHttpClient httpclient = AndroidHttpClient.newInstance("", getActivity());
-				stream = getFeed(url, index, httpclient);
-				httpclient.close();
+				URL url2 = new URL(url);
+				connection = (HttpURLConnection) url2.openConnection();
+				stream = getFeed(url2, index, connection);
+				
 				if(stream == null) { //we don't have any news
 					return null;
 				}
@@ -294,6 +287,9 @@ public class NewsFeedFragment extends Fragment {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} finally {
+				if(connection != null)
+					connection.disconnect();
 			}
 			return feed;
 		}

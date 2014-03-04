@@ -27,7 +27,7 @@
 	<string name="istid_hint">ist1XXXXX</string>
 	<string name="password_hint">Password</string>
 	<string name="ist_logo">IST Logo</string>
-	<string name="fenix_ist">Fenix@IST</string>
+	<string name="fenix_ist">Reader for FenixEDU</string>
 	<string name="this_application_is_currently_in_alpha_stage_">This application is currently in alpha stage.</string>
 	
 </resources>

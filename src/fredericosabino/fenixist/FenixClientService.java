@@ -1,5 +1,6 @@
 package fredericosabino.fenixist;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,15 +10,11 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
-import java.net.MalformedURLException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.NotificationManager;
@@ -27,12 +24,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.http.AndroidHttpClient;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
+import fredericosabino.fenixist.exceptions.NoConnectionException;
 
 /**
  * Service that creates a worker thread to to handle all start requests, on at a time
@@ -142,7 +139,7 @@ public class FenixClientService extends Service {
 	}
 	
 
-	private synchronized void  handleNews(ArrayList<String> urls, RSSParser parser) {
+	private synchronized void handleNews(ArrayList<String> urls, RSSParser parser) {
 		Log.i(TAG, "Handling Message");
 		ArrayList<RSSItem> result = null;
 		
@@ -162,14 +159,16 @@ public class FenixClientService extends Service {
 						ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 						NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 						if(networkInfo != null && networkInfo.isConnected()) {
-							result = parser.parse(downloadFeed(urls.get(i)));
+							InputStream in = downloadFeed(urls.get(i));
+							result = parser.parse(in);
+							in.close();
 						} else {
 							return; //lost connection try again later TODO: may not be this now...
 						}
 						_newFeed.add(result);
-					} catch (XmlPullParserException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
+					} catch (NoConnectionException e) {
+						return;
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				} else {
@@ -220,14 +219,11 @@ public class FenixClientService extends Service {
 		} else {
 			result = new ArrayList<Boolean>();
 			for(int i = 0; i < urls.size(); i++) {
-				try {					
-					AndroidHttpClient httpclient = AndroidHttpClient.newInstance("", this);
-				    HttpHead httphead = new HttpHead(urls.get(i));
-				    HttpResponse response = httpclient.execute(httphead);
-				    httpclient.close();
-				    
-				    long length = Long.valueOf(response.getFirstHeader("Content-Length").getValue());
-				    Log.i(TAG, "Content length of " + cNames.get(i) + " is " + length);
+				try {
+					URL url = new URL(urls.get(i));
+					HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+					urlConnection.setRequestMethod("HEAD");
+				    long length = urlConnection.getContentLength();
 					
 					if(length != sizes.get(i)) {
 						result.add(true); //new content
@@ -235,11 +231,7 @@ public class FenixClientService extends Service {
 					} else {
 						result.add(false); //no new content
 					}
-				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -430,14 +422,22 @@ public class FenixClientService extends Service {
 		super.onDestroy();
 	}
 	
-	private InputStream downloadFeed(String url) throws IOException {		
-		HttpClient httpclient = new DefaultHttpClient();
-		HttpGet httpget = new HttpGet(url);
-		HttpResponse response = httpclient.execute(httpget);
-		HttpEntity entity = response.getEntity();
-		
-		return entity.getContent();
-		//return connection.getInputStream();
+	private InputStream downloadFeed(String url) throws NoConnectionException {		
+		InputStream in = null;
+		ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+		try {
+			if(networkInfo != null && networkInfo.isConnected()) {
+				URL url2 = new URL(url);
+				URLConnection urlConnection = url2.openConnection();
+			    in = new BufferedInputStream(urlConnection.getInputStream());
+			} else {
+				throw new NoConnectionException();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return in;
 	}
 
 	@Override

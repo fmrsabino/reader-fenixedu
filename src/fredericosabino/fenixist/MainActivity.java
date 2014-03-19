@@ -156,7 +156,7 @@ public class MainActivity extends Activity {
 
             /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
-            	getActionBar().setTitle(R.string.fenix_ist);
+            	getActionBar().setTitle(R.string.app_name);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 		};

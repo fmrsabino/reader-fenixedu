@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Reader for FenixEDU</string>
+    <string name="app_name">Técnico Lisboa</string>
     <string name="edit_message">Enter a message.</string>
     <string name="button_send">Send</string>
     <string name="title_activity_display_message">DisplayMessageActivity</string>

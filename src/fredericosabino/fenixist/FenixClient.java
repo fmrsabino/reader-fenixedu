@@ -17,6 +17,7 @@ import android.os.AsyncTask;
 import com.google.gson.Gson;
 
 import fredericosabino.fenixist.exceptions.NoConnectionException;
+import fredericosabino.fenixist.fenixdata.AboutInfo;
 import fredericosabino.fenixist.fenixdata.CourseInfo;
 import fredericosabino.fenixist.fenixdata.UserCoursesInfo;
 
@@ -37,6 +38,33 @@ public class FenixClient {
 	    return s.hasNext() ? s.next() : "";
 	}
 	
+	public AboutInfo getAbout() throws NoConnectionException {
+		String result = null;
+		String baseURL = "https://fenix.tecnico.ulisboa.pt/api/fenix/v1/about";
+		FenixDownloader task = (FenixDownloader) new FenixDownloader().execute(baseURL);
+		
+		try {
+			result = task.get(); //blocks UI Thread :( TODO: Download indicator + exception treatment
+			if(result == null) {
+				throw new NoConnectionException();
+			}
+			return parseAboutInfo(result);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private AboutInfo parseAboutInfo(String result) {
+		Gson gson = new Gson();
+		AboutInfo about = gson.fromJson(result, AboutInfo.class);
+		return about;
+	}
+
 	public UserCoursesInfo getUserCourses() throws NoConnectionException {
 		String result = null;
 		String baseURL = "https://fenix.tecnico.ulisboa.pt/api/fenix/v1/person/courses?access_token=" + accessToken;

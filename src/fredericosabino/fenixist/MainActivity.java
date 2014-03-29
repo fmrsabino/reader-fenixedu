@@ -35,6 +35,7 @@ import android.widget.TextView;
 
 import fredericosabino.fenixist.R;
 import fredericosabino.fenixist.exceptions.NoConnectionException;
+import fredericosabino.fenixist.fenixdata.AboutInfo;
 import fredericosabino.fenixist.fenixdata.CourseInfo;
 import fredericosabino.fenixist.fenixdata.UserCoursesInfo;
 import fredericosabino.fenixist.fenixdata.UserCoursesInfo.Enrolment;
@@ -227,11 +228,19 @@ public class MainActivity extends Activity {
 		
 		ArrayList<ClassData> cds = new ArrayList<MainActivity.ClassData>();
 		UserCoursesInfo courses = fClient.getUserCourses();
-		for(Enrolment e : courses.getEnrolments()) {
-			Log.v("Enrolment", e.getName());
-			CourseInfo course = fClient.getCourseInfo(e.getId());
-			
-			cds.add(new ClassData(e.getName(), course.getAnnouncementLink(), course.getUrl()));
+		if(courses.getEnrolments().length == 0) {
+			AboutInfo about = fClient.getAbout();
+			System.out.println(about.getRssFeeds());
+			for(AboutInfo.PublicFeed feed : about.getRssFeeds()) {
+				cds.add(new ClassData(feed.getDescription(), feed.getUrl(), about.getInstitutionUrl()));
+			}
+		} else {
+			for(Enrolment e : courses.getEnrolments()) {
+				Log.v("Enrolment", e.getName());
+				CourseInfo course = fClient.getCourseInfo(e.getId());
+				
+				cds.add(new ClassData(e.getName(), course.getAnnouncementLink(), course.getUrl()));
+			}
 		}
 		
 		//Sort lexicographically

@@ -1,43 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/RelativeLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
-    android:orientation="vertical"
-    android:paddingTop="0dp"
     android:windowActionBar="false" >
-
-    <ImageView
+    
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="20dp">
+        
+        <ImageView
         android:id="@+id/imageView1"
         android:layout_width="134dp"
-        android:layout_height="302dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="23dp"
+        android:layout_height="134dp"
+        android:layout_marginTop="30dp"
         android:clickable="false"
         android:contentDescription="@string/ist_logo"
         android:duplicateParentState="false"
         android:longClickable="false"
         android:src="@drawable/web_hi_res_512" />
-
-    <TextView
+        
+        <TextView
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/imageView1"
-        android:layout_centerHorizontal="true"
         android:layout_marginBottom="11dp"
         android:text="@string/app_name"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="#000" />
-
-    <ProgressBar
-        android:id="@+id/signingLoading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/imageView1"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone" />
-
-</RelativeLayout>
+        
+        <TextView
+            android:layout_marginTop="15dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="22sp"
+            android:text="Movemo-nos! A nova aplicação encontra-se disponível no Google Play. Clica no botão em baixo para a obter." />
+        
+        <ImageView android:src="@drawable/en_generic_rgb_wo_60"
+            android:id="@+id/play_button"
+            android:layout_marginTop="25dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        
+    </LinearLayout>
+</ScrollView>

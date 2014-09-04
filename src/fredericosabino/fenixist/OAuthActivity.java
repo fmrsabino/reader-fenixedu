@@ -34,10 +34,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -55,38 +58,21 @@ public class OAuthActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login_screen);
 		
-		_url = baseURL + clientID + "&redirect_uri=" + urlRedirect;
+		ImageView playButton = (ImageView) findViewById(R.id.play_button);
+		playButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				//Toast.makeText(OAuthActivity.this, "Google PLay!", Toast.LENGTH_SHORT).show();
+				Uri webpage = Uri.parse("market://details?id=pt.ist.mobile");
+				Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+				
+				if (intent.resolveActivity(getPackageManager()) != null) {
+					startActivity(intent);
+				}
+			}
+		});
 		
-		SharedPreferences settings = getSharedPreferences("OAuthToken", MODE_PRIVATE);
-		String accessToken = settings.getString("accessToken", null);
-		if(accessToken == null) {
-			//We need to get a new access token + refresh token
-			Log.v("OAUTH", "Token doesn't exist. Getting new one...");
-			
-			//Check Internet Connection
-			ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-			if(networkInfo != null && networkInfo.isConnected()) {
-				new DownloadPage().execute(_url); //[login]+NewToken
-			} else {
-				setContentView(R.layout.no_connection);
-			}
-		}
-		else {
-			View view = findViewById(R.id.signingLoading);
-			view.setVisibility(View.VISIBLE);
-			Log.v("OAUTH", "Token exists and its value is: " + accessToken);
-			
-			//Check Internet Connection
-			ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-			if(networkInfo != null && networkInfo.isConnected()) {
-				//See if the token is still valid with a simple GET request
-				tokenValidatorTask = (TokenValidator) new TokenValidator().execute(accessToken);
-			} else {
-				enterApp(); //enter app even without checking for the token but it must be check with later requests
-			}
-		}
 	}
 	
 	public void retryConnection(View v) {
